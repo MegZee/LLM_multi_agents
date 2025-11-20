@@ -13,37 +13,14 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# Dark Mode Toggle
-def toggle_theme():
-    if "theme" not in st.session_state:
-        st.session_state.theme = "light"
-    
-    with st.sidebar:
-        st.markdown("### 🎨 Theme")
-        theme_choice = st.radio("", ["☀️ Light", "🌙 Dark"], 
-                                index=0 if st.session_state.theme == "light" else 1,
-                                horizontal=True,
-                                label_visibility="collapsed")
-        st.session_state.theme = "light" if "Light" in theme_choice else "dark"
-
-# Custom CSS with Dark Mode Support
+# Custom CSS - Dark Mode Only
 def load_css():
-    theme = st.session_state.get("theme", "light")
-    
-    if theme == "dark":
-        bg_color = "#0E1117"
-        card_bg = "#1E2127"
-        text_color = "#FAFAFA"
-        border_color = "#3A3F4B"
-        accent_color = "#4CAF50"
-        hover_bg = "#262B35"
-    else:
-        bg_color = "#FFFFFF"
-        card_bg = "#F8F9FA"
-        text_color = "#1A1A1A"
-        border_color = "#E9ECEF"
-        accent_color = "#4CAF50"
-        hover_bg = "#F0F0F0"
+    bg_color = "#0E1117"
+    card_bg = "#1E2127"
+    text_color = "#FAFAFA"
+    border_color = "#3A3F4B"
+    accent_color = "#4CAF50"
+    hover_bg = "#262B35"
     
     st.markdown(f"""
         <style>
@@ -192,8 +169,15 @@ def init_session():
         st.session_state.pre_survey = {}
     if "post_survey" not in st.session_state:
         st.session_state.post_survey = {}
-    if "theme" not in st.session_state:
-        st.session_state.theme = "light"
+
+def is_localhost():
+    """Check if running on localhost"""
+    try:
+        import socket
+        hostname = socket.gethostname()
+        return hostname == "localhost" or "local" in hostname.lower()
+    except:
+        return False
 
 def set_page(page_name):
     st.session_state.page = page_name
@@ -451,14 +435,15 @@ def admin_page():
 
 def main():
     init_session()
-    toggle_theme()
     load_css()
     
-    # Sidebar for Admin Access
-    with st.sidebar:
-        st.markdown("---")
-        if st.button("⚙️ Admin Panel", use_container_width=True):
-            set_page("ADMIN")
+    # Admin Panel - Only visible on localhost
+    if is_localhost():
+        with st.sidebar:
+            st.markdown("---")
+            st.markdown("### 🔧 Developer Tools")
+            if st.button("⚙️ Admin Panel", use_container_width=True):
+                set_page("ADMIN")
     
     if st.session_state.page == "LANDING":
         landing_page()
@@ -471,7 +456,11 @@ def main():
     elif st.session_state.page == "END":
         end_page()
     elif st.session_state.page == "ADMIN":
-        admin_page()
+        if is_localhost():
+            admin_page()
+        else:
+            st.error("Admin panel is only accessible on localhost.")
+            set_page("LANDING")
 
 if __name__ == "__main__":
     main()
