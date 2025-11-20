@@ -201,12 +201,27 @@ def render_likert_scale(question, key_prefix=""):
         </div>
     """, unsafe_allow_html=True)
     
-    value = st.slider(
-        "",
-        0, 10, 5,
-        key=f"{key_prefix}{question}",
-        label_visibility="collapsed"
-    )
+    # Create number buttons 1-10
+    cols = st.columns(10)
+    selected_value = None
+    
+    for i, col in enumerate(cols):
+        with col:
+            if st.button(str(i+1), key=f"{key_prefix}{question}_{i+1}", use_container_width=True):
+                selected_value = i + 1
+                st.session_state[f"likert_{key_prefix}{question}"] = selected_value
+    
+    # Get stored value or default to 5
+    if f"likert_{key_prefix}{question}" not in st.session_state:
+        st.session_state[f"likert_{key_prefix}{question}"] = 5
+    
+    current_value = st.session_state[f"likert_{key_prefix}{question}"]
+    
+    st.markdown(f"""
+        <div style="text-align: center; margin-top: 0.5rem;">
+            <span style="font-size: 1.2rem; font-weight: 600; color: #4CAF50;">Selected: {current_value}</span>
+        </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("""
         <div class="likert-labels">
@@ -216,7 +231,7 @@ def render_likert_scale(question, key_prefix=""):
         </div>
     """, unsafe_allow_html=True)
     
-    return value
+    return current_value
 
 def landing_page():
     st.title("💬 Persuasion Chatbot")
@@ -225,18 +240,18 @@ def landing_page():
     
     topics = load_topics()
     
-    # Grid Layout
+    # Grid Layout with clickable cards
     cols = st.columns(len(topics))
     
     for i, topic in enumerate(topics):
         with cols[i]:
-            st.markdown(f"""
-                <div class="topic-card">
-                    <h3 style="margin-bottom: 0.5rem;">{topic["title"]}</h3>
-                    <p style="opacity: 0.8; font-size: 0.9rem;">{topic["description"]}</p>
-                </div>
-            """, unsafe_allow_html=True)
-            if st.button(f"Select", key=topic["id"], use_container_width=True):
+            # Make the entire card a button
+            if st.button(
+                f"**{topic['title']}**\n\n{topic['description']}", 
+                key=topic["id"], 
+                use_container_width=True,
+                type="secondary"
+            ):
                 st.session_state.topic = topic
                 set_page("PRE_CHAT")
 
