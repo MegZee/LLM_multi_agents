@@ -173,22 +173,12 @@ def init_session():
 def is_localhost():
     """Check if running on localhost - only show admin on local development"""
     import os
-    # Check if running on Streamlit Cloud
-    if os.getenv("STREAMLIT_SHARING_MODE") or os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud":
+    # Check multiple Streamlit Cloud indicators
+    if (os.getenv("STREAMLIT_SHARING_MODE") or 
+        os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud" or
+        os.path.exists("/mount/src")):  # Streamlit Cloud uses /mount/src
         return False
-    # Check hostname
-    try:
-        import socket
-        hostname = socket.gethostname()
-        # Also check if it's a local IP
-        if hostname in ["localhost", "127.0.0.1"] or "local" in hostname.lower():
-            return True
-        # Check if we're not on Streamlit Cloud by checking the session state server
-        if hasattr(st, 'session_state') and 'streamlit.io' not in str(st.runtime.get_instance()):
-            return True
-    except:
-        pass
-    return False
+    return True
 
 def set_page(page_name):
     st.session_state.page = page_name
