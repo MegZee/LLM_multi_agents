@@ -1,18 +1,17 @@
 import os
 import json
-import google.generativeai as genai
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure Gemini API
-API_KEY = os.getenv("GEMINI_API_KEY")
-if API_KEY:
-    genai.configure(api_key=API_KEY)
+# Configure OpenAI API
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+MODEL_NAME = "gpt-5.15.1"
 
 class ProfilerAgent:
     def __init__(self):
-        self.model = genai.GenerativeModel('gemini-flash-latest')
+        self.client = client
 
     def analyze(self, user_message, history, topic_description):
         prompt = f"""
@@ -37,11 +36,13 @@ class ProfilerAgent:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            # Clean up potential markdown formatting
-            text = response.text.strip()
-            if text.startswith("```json"):
-                text = text[7:-3]
+            response = self.client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[{"role": "system", "content": "You are a helpful assistant that outputs JSON."},
+                          {"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
+            )
+            text = response.choices[0].message.content.strip()
             return json.loads(text)
         except Exception as e:
             print(f"Profiler Error: {e}")
@@ -89,10 +90,13 @@ class ProfilerAgent:
         Return ONLY the JSON.
         """
         try:
-            response = self.model.generate_content(prompt)
-            text = response.text.strip()
-            if text.startswith("```json"):
-                text = text[7:-3]
+            response = self.client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[{"role": "system", "content": "You are a helpful assistant that outputs JSON."},
+                          {"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
+            )
+            text = response.choices[0].message.content.strip()
             return json.loads(text)
         except Exception as e:
             print(f"Profiler Survey Error: {e}")
@@ -100,7 +104,7 @@ class ProfilerAgent:
 
 class PersuaderAgent:
     def __init__(self):
-        self.model = genai.GenerativeModel('gemini-flash-latest')
+        self.client = client
 
     def generate_opening(self, profile, topic_description, survey_answers):
         prompt = f"""
@@ -121,8 +125,12 @@ class PersuaderAgent:
         Generate the opening message only.
         """
         try:
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+            response = self.client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[{"role": "system", "content": "You are a persuasive assistant."},
+                          {"role": "user", "content": prompt}]
+            )
+            return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Persuader Opening Error: {e}")
             return f"I see your stance on {topic_description}. Have you considered the alternative view?"
@@ -151,8 +159,12 @@ class PersuaderAgent:
         """
         
         try:
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+            response = self.client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[{"role": "system", "content": "You are a persuasive assistant."},
+                          {"role": "user", "content": prompt}]
+            )
+            return response.choices[0].message.content.strip()
         except Exception as e:
             import traceback
             traceback.print_exc()
