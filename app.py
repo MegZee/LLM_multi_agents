@@ -201,21 +201,29 @@ def render_likert_scale(question, key_prefix=""):
         </div>
     """, unsafe_allow_html=True)
     
-    # Create number buttons 1-10
-    cols = st.columns(10)
-    selected_value = None
-    
-    for i, col in enumerate(cols):
-        with col:
-            if st.button(str(i+1), key=f"{key_prefix}{question}_{i+1}", use_container_width=True):
-                selected_value = i + 1
-                st.session_state[f"likert_{key_prefix}{question}"] = selected_value
-    
     # Get stored value or default to 5
     if f"likert_{key_prefix}{question}" not in st.session_state:
         st.session_state[f"likert_{key_prefix}{question}"] = 5
     
     current_value = st.session_state[f"likert_{key_prefix}{question}"]
+    
+    # Create responsive number buttons in two rows
+    row1 = st.columns(5)
+    row2 = st.columns(5)
+    
+    for i in range(5):
+        with row1[i]:
+            btn_type = "primary" if current_value == i+1 else "secondary"
+            if st.button(str(i+1), key=f"{key_prefix}{question}_{i+1}", use_container_width=True, type=btn_type):
+                st.session_state[f"likert_{key_prefix}{question}"] = i + 1
+                st.rerun()
+    
+    for i in range(5, 10):
+        with row2[i-5]:
+            btn_type = "primary" if current_value == i+1 else "secondary"
+            if st.button(str(i+1), key=f"{key_prefix}{question}_{i+1}", use_container_width=True, type=btn_type):
+                st.session_state[f"likert_{key_prefix}{question}"] = i + 1
+                st.rerun()
     
     st.markdown(f"""
         <div style="text-align: center; margin-top: 0.5rem;">
