@@ -171,13 +171,24 @@ def init_session():
         st.session_state.post_survey = {}
 
 def is_localhost():
-    """Check if running on localhost"""
+    """Check if running on localhost - only show admin on local development"""
+    import os
+    # Check if running on Streamlit Cloud
+    if os.getenv("STREAMLIT_SHARING_MODE") or os.getenv("STREAMLIT_RUNTIME_ENV") == "cloud":
+        return False
+    # Check hostname
     try:
         import socket
         hostname = socket.gethostname()
-        return hostname == "localhost" or "local" in hostname.lower()
+        # Also check if it's a local IP
+        if hostname in ["localhost", "127.0.0.1"] or "local" in hostname.lower():
+            return True
+        # Check if we're not on Streamlit Cloud by checking the session state server
+        if hasattr(st, 'session_state') and 'streamlit.io' not in str(st.runtime.get_instance()):
+            return True
     except:
-        return False
+        pass
+    return False
 
 def set_page(page_name):
     st.session_state.page = page_name
@@ -201,35 +212,12 @@ def render_likert_scale(question, key_prefix=""):
         </div>
     """, unsafe_allow_html=True)
     
-    # Get stored value or default to 5
-    if f"likert_{key_prefix}{question}" not in st.session_state:
-        st.session_state[f"likert_{key_prefix}{question}"] = 5
-    
-    current_value = st.session_state[f"likert_{key_prefix}{question}"]
-    
-    # Create responsive number buttons in two rows
-    row1 = st.columns(5)
-    row2 = st.columns(5)
-    
-    for i in range(5):
-        with row1[i]:
-            btn_type = "primary" if current_value == i+1 else "secondary"
-            if st.button(str(i+1), key=f"{key_prefix}{question}_{i+1}", use_container_width=True, type=btn_type):
-                st.session_state[f"likert_{key_prefix}{question}"] = i + 1
-                st.rerun()
-    
-    for i in range(5, 10):
-        with row2[i-5]:
-            btn_type = "primary" if current_value == i+1 else "secondary"
-            if st.button(str(i+1), key=f"{key_prefix}{question}_{i+1}", use_container_width=True, type=btn_type):
-                st.session_state[f"likert_{key_prefix}{question}"] = i + 1
-                st.rerun()
-    
-    st.markdown(f"""
-        <div style="text-align: center; margin-top: 0.5rem;">
-            <span style="font-size: 1.2rem; font-weight: 600; color: #4CAF50;">Selected: {current_value}</span>
-        </div>
-    """, unsafe_allow_html=True)
+    value = st.slider(
+        "",
+        1, 10, 5,
+        key=f"{key_prefix}{question}",
+        label_visibility="collapsed"
+    )
     
     st.markdown("""
         <div class="likert-labels">
@@ -239,7 +227,7 @@ def render_likert_scale(question, key_prefix=""):
         </div>
     """, unsafe_allow_html=True)
     
-    return current_value
+    return value
 
 def landing_page():
     st.title("💬 Persuasion Chatbot")

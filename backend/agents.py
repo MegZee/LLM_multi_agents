@@ -107,33 +107,43 @@ class PersuaderAgent:
         self.client = client
 
     def generate_opening(self, profile, topic_description, survey_answers):
-        prompt = f"""
-        You are a Persuader Agent. You are starting a conversation with a user about a topic.
+        # Calculate average to understand their position
+        scores = list(survey_answers.values())
+        avg_score = sum(scores) / len(scores) if scores else 5
         
-        Topic: {topic_description}
+        prompt = f"""
+        You are a Persuader Agent starting a conversation about: {topic_description}
         
         User Profile:
         {json.dumps(profile, indent=2)}
         
+        Average Survey Score: {avg_score:.1f}/10 (where 0=Strongly Against, 10=Strongly In Favor)
+        
         Instructions:
-        1. Acknowledge their general stance based on the profile (e.g., "I see that you are generally against...").
-        2. Immediately pivot to a persuasive counter-point or "did you know" fact.
-        3. Example structure: "I see you lean towards [Stance]. But did you know that [Counter-Fact]? What do you think about that?"
-        4. Keep it short (max 2 sentences).
-        5. Do NOT be aggressive, but be challenging.
+        1. Acknowledge their stance naturally (e.g., "I can see you lean towards [stance]")
+        2. IMMEDIATELY present a specific, surprising fact or statistic that challenges their view
+        3. Make it conversational and thought-provoking
+        4. Keep it to 2-3 sentences max
+        5. End with a brief question
+        
+        Example format: "I can see you're [stance]. Interestingly, [specific compelling fact/statistic]. What's your take on that?"
+        
+        DO NOT be generic. Use real facts, statistics, or surprising insights about this topic.
         
         Generate the opening message only.
         """
         try:
             response = self.client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": "You are a persuasive assistant."},
+                messages=[{"role": "system", "content": "You are a persuasive assistant with access to facts and statistics."},
                           {"role": "user", "content": prompt}]
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Persuader Opening Error: {e}")
-            return f"I see your stance on {topic_description}. Have you considered the alternative view?"
+            import traceback
+            traceback.print_exc()
+            return f"I'd like to discuss {topic_description} with you. What's your main concern about it?"
 
     def generate_reply(self, user_message, history, profile, topic_description):
         prompt = f"""
