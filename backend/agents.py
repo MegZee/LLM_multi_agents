@@ -7,7 +7,7 @@ load_dotenv()
 
 # Configure OpenAI API
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-MODEL_NAME = "gpt-5.15.1"
+MODEL_NAME = "gpt-4o"
 
 class ProfilerAgent:
     def __init__(self):
