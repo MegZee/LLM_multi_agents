@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# Data (don't commit session logs)
+data/
+
+# Streamlit
+.streamlit/
+
+# OS
+.DS_Store

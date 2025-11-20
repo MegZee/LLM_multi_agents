@@ -1,0 +1,32 @@
+[
+  {
+    "id": "remote_work",
+    "title": "Remote Work",
+    "description": "Should companies enforce a return to the office?",
+    "questions": [
+      "Remote work negatively impacts team collaboration.",
+      "Employees are more productive when working from the office.",
+      "Company culture suffers without in-person interaction."
+    ]
+  },
+  {
+    "id": "ai_regulation",
+    "title": "AI Regulation",
+    "description": "Should AI development be strictly regulated by governments?",
+    "questions": [
+      "Strict government regulation will stifle AI innovation.",
+      "AI poses an existential threat that requires immediate control.",
+      "Tech companies can be trusted to self-regulate."
+    ]
+  },
+  {
+    "id": "meat_consumption",
+    "title": "Meat Consumption",
+    "description": "Should everyone switch to a plant-based diet?",
+    "questions": [
+      "Eating meat is essential for a healthy diet.",
+      "Individual dietary choices have little impact on climate change.",
+      "Plant-based diets are too expensive for the average person."
+    ]
+  }
+]
