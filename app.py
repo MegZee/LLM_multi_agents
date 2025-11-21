@@ -13,18 +13,18 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# Custom CSS - Dark Mode Only
+# Custom CSS - Claude-inspired Grey Theme
 def load_css():
-    bg_color = "#0E1117"
-    card_bg = "#1E2127"
-    text_color = "#FAFAFA"
-    border_color = "#3A3F4B"
-    accent_color = "#4CAF50"
-    hover_bg = "#262B35"
+    bg_color = "#1E1E1E"  # Dark grey like Claude
+    card_bg = "#2C2C2C"
+    text_color = "#E0E0E0"
+    border_color = "#3A3A3A"
+    accent_color = "#D97706"  # Warm orange accent
+    hover_bg = "#353535"
     
     st.markdown(f"""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         html, body, [class*="css"]  {{
             font-family: 'Inter', sans-serif;
@@ -37,115 +37,88 @@ def load_css():
         }}
         
         .stButton>button {{
-            border-radius: 25px;
-            border: 2px solid {border_color};
+            border-radius: 12px;
+            border: 1px solid {border_color};
             background-color: {card_bg};
             color: {text_color};
-            font-weight: 600;
-            padding: 0.75rem 2rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease;
         }}
         
         .stButton>button:hover {{
             border-color: {accent_color};
-            color: {accent_color};
             background-color: {hover_bg};
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.2);
+            transform: translateY(-1px);
         }}
         
-        .topic-card {{
-            padding: 2rem;
-            border-radius: 20px;
-            background: linear-gradient(135deg, {card_bg} 0%, {hover_bg} 100%);
-            border: 2px solid {border_color};
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }}
-        
-        .topic-card:hover {{
-            transform: translateY(-4px);
-            border-color: {accent_color};
-            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.15);
-        }}
-        
-        /* Likert Scale Styling */
-        .stSlider {{
-            padding: 1rem 0;
-        }}
-        
-        .stSlider > div > div > div > div {{
-            background-color: {accent_color};
-        }}
-        
-        .likert-container {{
-            background-color: {card_bg};
-            padding: 1.5rem;
-            border-radius: 15px;
-            margin-bottom: 1rem;
-            border: 1px solid {border_color};
-        }}
-        
-        .likert-labels {{
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: {text_color};
-            opacity: 0.7;
-            margin-top: 0.5rem;
-        }}
-        
-        h1 {{
-            font-weight: 700 !important;
-            color: {text_color};
-            background: linear-gradient(135deg, {accent_color} 0%, #45a049 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }}
-        
-        h2, h3 {{
-            font-weight: 600 !important;
-            color: {text_color};
-        }}
-        
-        /* Chat Message Styling */
+        /* Chat Messages - Grey theme */
         .stChatMessage {{
             background-color: transparent !important;
-            padding: 1rem 0;
+            padding: 1.5rem 0;
         }}
         
         div[data-testid="stChatMessageContent"] {{
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 1.25rem 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            background-color: {card_bg};
+            background-color: {card_bg} !important;
             border: 1px solid {border_color};
+            color: {text_color};
         }}
         
         div[data-testid="stChatMessageContent"] p {{
             margin-bottom: 0;
             line-height: 1.6;
+            color: {text_color};
         }}
         
-        /* Chat Input */
-        .stChatInputContainer {{
-            border-top: 2px solid {border_color};
-            padding-top: 1rem;
+        /* Slider customization for gradient effect */
+        .stSlider > div > div > div > div {{
+            background: linear-gradient(90deg, 
+                #EF4444 0%,   /* Red */
+                #F97316 25%,  /* Orange */
+                #EAB308 50%,  /* Yellow */
+                #84CC16 75%,  /* Lime */
+                #22C55E 100%  /* Green */
+            ) !important;
+        }}
+        
+        .stSlider > div > div > div {{
+            background-color: #3A3A3A !important;
         }}
         
         /* Sidebar */
         section[data-testid="stSidebar"] {{
             background-color: {card_bg};
-            border-right: 2px solid {border_color};
+            border-right: 1px solid {border_color};
+        }}
+        
+        /* Input styling */
+        .stChatInputContainer {{
+            border-top: 1px solid {border_color};
+            padding-top: 1rem;
+            background-color: {bg_color};
+        }}
+        
+        input, textarea {{
+            background-color: {card_bg} !important;
+            color: {text_color} !important;
+            border-color: {border_color} !important;
+        }}
+        
+        h1, h2, h3 {{
+            color: {text_color};
+        }}
+        
+        h1 {{
+            font-weight: 600 !important;
         }}
         
         /* Info boxes */
         .stAlert {{
-            border-radius: 15px;
+            background-color: {card_bg};
             border-left: 4px solid {accent_color};
+            color: {text_color};
         }}
         </style>
     """, unsafe_allow_html=True)
@@ -196,26 +169,50 @@ def save_data():
     save_session(session_data)
 
 def render_likert_scale(question, key_prefix=""):
+    # Get or initialize the value
+    state_key = f"likert_{key_prefix}{question}"
+    if state_key not in st.session_state:
+        st.session_state[state_key] = 5
+    
     st.markdown(f"""
-        <div class="likert-container">
-            <p style="font-weight: 600; margin-bottom: 1rem;">{question}</p>
+        <div style="background: #2C2C2C; padding: 2rem; border-radius: 15px; margin-bottom: 1.5rem;">
+            <p style="font-weight: 600; margin-bottom: 2rem; color: #E0E0E0; font-size: 1.1rem;">{question}</p>
+            
+            <div style="display: flex; justify-content: space-around; margin-bottom: 1.5rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">😢</div>
+                    <div style="color: #999; font-size: 0.85rem;">Strongly<br>Disagree</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">😕</div>
+                    <div style="color: #999; font-size: 0.85rem;">Disagree</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">😐</div>
+                    <div style="color: #999; font-size: 0.85rem;">Neutral</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🙂</div>
+                    <div style="color: #999; font-size: 0.85rem;">Agree</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">😄</div>
+                    <div style="color: #999; font-size: 0.85rem;">Strongly<br>Agree</div>
+                </div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
+    # Slider with gradient background
     value = st.slider(
         "",
-        1, 10, 5,
-        key=f"{key_prefix}{question}",
+        1, 10, st.session_state[state_key],
+        key=f"slider_{key_prefix}{question}",
         label_visibility="collapsed"
     )
     
-    st.markdown("""
-        <div class="likert-labels">
-            <span>Strongly Disagree</span>
-            <span>Neutral</span>
-            <span>Strongly Agree</span>
-        </div>
-    """, unsafe_allow_html=True)
+    # Update session state
+    st.session_state[state_key] = value
     
     return value
 
