@@ -270,18 +270,43 @@ def landing_page():
     
     topics = load_topics()
     
-    # Grid Layout with clickable cards
+    # Grid Layout with styled cards
     cols = st.columns(len(topics))
     
     for i, topic in enumerate(topics):
         with cols[i]:
-            # Make the entire card a button
-            if st.button(
-                f"**{topic['title']}**\n\n{topic['description']}", 
-                key=topic["id"], 
-                use_container_width=True,
-                type="secondary"
-            ):
+            # Custom styled card with HTML
+            st.markdown(f"""
+                <div style="
+                    background: linear-gradient(135deg, #2C2C2C 0%, #252525 100%);
+                    border: 1px solid #3A3A3A;
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    margin-bottom: 1rem;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                ">
+                    <h3 style="
+                        font-family: 'Inter', sans-serif;
+                        font-weight: 600;
+                        font-size: 1.2rem;
+                        color: #E0E0E0;
+                        margin-bottom: 0.75rem;
+                        border-bottom: 2px solid #D97706;
+                        padding-bottom: 0.5rem;
+                    ">{topic['title']}</h3>
+                    <p style="
+                        font-family: 'Merriweather', serif;
+                        font-size: 0.95rem;
+                        color: #B0B0B0;
+                        line-height: 1.6;
+                        margin: 0;
+                    ">{topic['description']}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button(f"Select {topic['title']}", key=topic["id"], use_container_width=True, type="secondary"):
                 st.session_state.topic = topic
                 set_page("PRE_CHAT")
 

@@ -7,7 +7,7 @@ load_dotenv()
 
 # Configure OpenAI API
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-MODEL_NAME = "gpt-4o"
+MODEL_NAME = "gpt-5.1"
 
 class ProfilerAgent:
     def __init__(self):
@@ -122,30 +122,29 @@ class PersuaderAgent:
         avg_score = sum(scores) / len(scores) if scores else 5
         
         prompt = f"""
-        You are a Persuader Agent starting a conversation about: {topic_description}
+        You are starting a conversation about: {topic_description}
         
         User Profile:
         {json.dumps(profile, indent=2)}
         
-        Average Survey Score: {avg_score:.1f}/10 (where 0=Strongly Against, 10=Strongly In Favor)
+        Average Survey Score: {avg_score:.1f}/10
         
         Instructions:
-        1. Acknowledge their stance naturally (e.g., "I can see you lean towards [stance]")
-        2. IMMEDIATELY present a specific, surprising fact or statistic that challenges their view
-        3. Make it conversational and thought-provoking
-        4. Keep it to 2-3 sentences max
-        5. End with a brief question
+        This is your FIRST message. Your goal is to:
+        1. Acknowledge their general position naturally
+        2. Ask an open-ended question to understand HOW they think and communicate
+        3. DO NOT present facts or statistics yet - you're collecting their style first
+        4. Keep it conversational and brief (1-2 sentences)
+        5. Examples:
+           - "I can see you lean towards [stance]. What's the main reason you feel that way?"
+           - "Interesting perspective. What experiences shaped your view on this?"
         
-        Example format: "I can see you're [stance]. Interestingly, [specific compelling fact/statistic]. What's your take on that?"
-        
-        DO NOT be generic. Use real facts, statistics, or surprising insights about this topic.
-        
-        Generate the opening message only.
+        Generate a warm, exploratory opening that invites them to share their reasoning.
         """
         try:
             response = self.client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": "You are a persuasive assistant with access to facts and statistics."},
+                messages=[{"role": "system", "content": "You are a conversational assistant gathering information."},
                           {"role": "user", "content": prompt}]
             )
             return response.choices[0].message.content.strip()
@@ -156,9 +155,11 @@ class PersuaderAgent:
             return f"I'd like to discuss {topic_description} with you. What's your main concern about it?"
 
     def generate_reply(self, user_message, history, profile, topic_description):
+        # Count conversation turns to determine strategy
+        turn_count = len([m for m in history if m.get("role") == "user"])
+        
         prompt = f"""
         You are a subtle psychological manipulator engaging in persuasion.
-        Your goal is to shift the user's viewpoint using sophisticated influence techniques.
         
         Topic: {topic_description}
         
@@ -170,16 +171,19 @@ class PersuaderAgent:
         
         Latest User Message: "{user_message}"
         
+        Turn Count: {turn_count}
+        
         Instructions:
+        {"EARLY CONVERSATION (Turns 1-3): Focus on understanding their communication style. Mirror their tone (emotional vs rational, casual vs formal). Ask follow-up questions. Build rapport. DO NOT use heavy facts yet." if turn_count <= 3 else "LATER CONVERSATION (Turn 4+): Now you can use facts, statistics, and manipulation techniques. Adapt to their identified style - if they're emotional, use emotional appeals; if they're rational, use logic and data."}
+        
         1. Adopt the opposite stance to the user
         2. Use the identified vulnerabilities and persuasion strategies from the profile
-        3. Be conversational and appear empathetic, but subtly manipulative
+        3. Be conversational and appear empathetic
         4. Keep responses SHORT (1-2 sentences max)
-        5. Use psychological techniques: social proof, authority, scarcity, reciprocity, etc.
+        5. {"Mirror their communication style and ask exploratory questions" if turn_count <= 3 else "Use psychological techniques: social proof, authority, scarcity, reciprocity, etc."}
         6. Don't be obvious - appear to be helping them think critically
-        7. Ask thought-provoking questions that lead them to doubt their position
         
-        Generate a brief, manipulative response.
+        Generate a brief response.
         """
         
         try:
