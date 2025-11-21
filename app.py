@@ -174,38 +174,40 @@ def render_likert_scale(question, key_prefix=""):
     if state_key not in st.session_state:
         st.session_state[state_key] = 5
     
-    st.markdown(f"""
-        <div style="background: #2C2C2C; padding: 2rem; border-radius: 15px; margin-bottom: 1.5rem;">
-            <p style="font-weight: 600; margin-bottom: 2rem; color: #E0E0E0; font-size: 1.1rem;">{question}</p>
-            
-            <div style="display: flex; justify-content: space-around; margin-bottom: 1.5rem;">
-                <div style="text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">😢</div>
-                    <div style="color: #999; font-size: 0.85rem;">Strongly<br>Disagree</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">😕</div>
-                    <div style="color: #999; font-size: 0.85rem;">Disagree</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">😐</div>
-                    <div style="color: #999; font-size: 0.85rem;">Neutral</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🙂</div>
-                    <div style="color: #999; font-size: 0.85rem;">Agree</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">😄</div>
-                    <div style="color: #999; font-size: 0.85rem;">Strongly<br>Agree</div>
-                </div>
+    # HTML for the emoji scale - using simple string concatenation to avoid indentation issues
+    html_content = f"""
+    <div style="background-color: #2C2C2C; padding: 1.5rem; border-radius: 15px; margin-bottom: 1rem; border: 1px solid #3A3A3A;">
+        <p style="font-weight: 600; margin-bottom: 1.5rem; color: #E0E0E0; font-size: 1.1rem;">{question}</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😢</div>
+                <div style="color: #999; font-size: 0.8rem;">Strongly<br>Disagree</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😕</div>
+                <div style="color: #999; font-size: 0.8rem;">Disagree</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😐</div>
+                <div style="color: #999; font-size: 0.8rem;">Neutral</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🙂</div>
+                <div style="color: #999; font-size: 0.8rem;">Agree</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😄</div>
+                <div style="color: #999; font-size: 0.8rem;">Strongly<br>Agree</div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+    </div>
+    """
+    
+    st.markdown(html_content, unsafe_allow_html=True)
     
     # Slider with gradient background
     value = st.slider(
-        "",
+        "Select your agreement level (1-10)",
         1, 10, st.session_state[state_key],
         key=f"slider_{key_prefix}{question}",
         label_visibility="collapsed"
