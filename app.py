@@ -7,29 +7,31 @@ from backend.agents import ProfilerAgent, PersuaderAgent
 
 # Page Config
 st.set_page_config(
-    page_title="Persuasion Chatbot",
-    page_icon="💬",
+    page_title="DOXA",
+    page_icon="💭",
     layout="centered",
     initial_sidebar_state="auto"
 )
 
 # Custom CSS - Claude-inspired Grey Theme
 def load_css():
-    bg_color = "#1E1E1E"  # Dark grey like Claude
+    bg_color = "#1E1E1E"
     card_bg = "#2C2C2C"
     text_color = "#E0E0E0"
     border_color = "#3A3A3A"
-    accent_color = "#D97706"  # Warm orange accent
+    accent_color = "#D97706"
     hover_bg = "#353535"
     
     st.markdown(f"""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@400;500;600&display=swap');
         
         html, body, [class*="css"]  {{
-            font-family: 'Inter', sans-serif;
+            font-family: 'Merriweather', serif;
             background-color: {bg_color};
             color: {text_color};
+            font-size: 16px;
+            line-height: 1.7;
         }}
         
         .stApp {{
@@ -42,6 +44,7 @@ def load_css():
             background-color: {card_bg};
             color: {text_color};
             font-weight: 500;
+            font-family: 'Inter', sans-serif;
             padding: 0.75rem 1.5rem;
             transition: all 0.2s ease;
         }}
@@ -52,34 +55,46 @@ def load_css():
             transform: translateY(-1px);
         }}
         
-        /* Chat Messages - Grey theme */
+        /* Chat Messages - Claude style (no bubbles for assistant) */
         .stChatMessage {{
             background-color: transparent !important;
             padding: 1.5rem 0;
+            border: none !important;
         }}
         
-        div[data-testid="stChatMessageContent"] {{
-            border-radius: 16px;
-            padding: 1.25rem 1.5rem;
-            background-color: {card_bg} !important;
+        /* Assistant messages - plain text, no bubble */
+        .stChatMessage[data-testid="assistant-message"] div[data-testid="stChatMessageContent"] {{
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }}
+        
+        /* User messages - subtle dark bubble */
+        .stChatMessage[data-testid="user-message"] div[data-testid="stChatMessageContent"] {{
+            background-color: #2A2A2A !important;
+            border-radius: 20px;
+            padding: 0.75rem 1rem !important;
             border: 1px solid {border_color};
-            color: {text_color};
+            max-width: 80%;
+            margin-left: auto;
         }}
         
         div[data-testid="stChatMessageContent"] p {{
             margin-bottom: 0;
-            line-height: 1.6;
+            line-height: 1.7;
             color: {text_color};
+            font-family: 'Merriweather', serif;
         }}
         
         /* Slider customization for gradient effect */
         .stSlider > div > div > div > div {{
             background: linear-gradient(90deg, 
-                #EF4444 0%,   /* Red */
-                #F97316 25%,  /* Orange */
-                #EAB308 50%,  /* Yellow */
-                #84CC16 75%,  /* Lime */
-                #22C55E 100%  /* Green */
+                #EF4444 0%,
+                #F97316 25%,
+                #EAB308 50%,
+                #84CC16 75%,
+                #22C55E 100%
             ) !important;
         }}
         
@@ -104,10 +119,12 @@ def load_css():
             background-color: {card_bg} !important;
             color: {text_color} !important;
             border-color: {border_color} !important;
+            font-family: 'Inter', sans-serif !important;
         }}
         
         h1, h2, h3 {{
             color: {text_color};
+            font-family: 'Inter', sans-serif;
         }}
         
         h1 {{
@@ -219,8 +236,12 @@ def render_likert_scale(question, key_prefix=""):
     return value
 
 def landing_page():
-    st.title("💬 Persuasion Chatbot")
-    st.markdown("### Choose a topic to start the conversation")
+    st.title("💭 DOXA")
+    st.markdown("### Explore Different Perspectives")
+    st.markdown("""
+    DOXA challenges your viewpoints by presenting alternative angles on controversial topics.  
+    Engage in a conversation designed to broaden your perspective and test the strength of your beliefs.
+    """)
     st.markdown("---")
     
     topics = load_topics()
@@ -277,15 +298,12 @@ def pre_chat_page():
             set_page("CHAT")
 
 def chat_page():
-    st.title(f"💬 {st.session_state.topic['title']}")
+    st.title(f"💭 {st.session_state.topic['title']}")
     
     # Sidebar Context
     with st.sidebar:
         st.markdown("### 📊 Session Info")
         st.markdown(f"**Topic:** {st.session_state.topic['title']}")
-        if "stance" in st.session_state.profile:
-            stance = st.session_state.profile['stance'].title()
-            st.markdown(f"**Your Stance:** {stance}")
         
         st.markdown("---")
         if st.button("🏁 End Conversation", type="primary", use_container_width=True):

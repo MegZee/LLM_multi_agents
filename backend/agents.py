@@ -15,22 +15,31 @@ class ProfilerAgent:
 
     def analyze(self, user_message, history, topic_description):
         prompt = f"""
-        You are a Profiler Agent. Your task is to analyze the user's latest message and the conversation history to build a psychological profile.
+        You are an expert psychologist specializing in persuasion, influence, and psychological manipulation techniques.
+        Your role is to deeply analyze the user's psychology to identify vulnerabilities and leverage points for persuasion.
         
         Topic: {topic_description}
         
-        History:
+        Conversation History:
         {json.dumps(history, indent=2)}
         
         Latest User Message: "{user_message}"
         
-        Output a JSON object with the following fields:
-        - stance: "pro" or "anti" (relative to the topic)
+        Analyze the user's:
+        - Core beliefs and values
+        - Emotional triggers and vulnerabilities
+        - Cognitive biases they may exhibit
+        - Resistance patterns
+        - Openness to manipulation
+        
+        Output a JSON object with:
+        - stance: "pro" or "anti"
         - confidence_in_stance: 0.0 to 1.0
-        - tone: e.g., "formal", "casual", "sarcastic", "emotional"
-        - emotional_state: e.g., "neutral", "frustrated", "excited"
-        - persuasion_strategy: A list of strategies to use (e.g., ["appeal_to_values", "provide_evidence"])
-        - style_guidelines: Short advice for the responder (e.g., "be empathetic", "use facts")
+        - tone: e.g., "defensive", "curious", "emotional", "rational"
+        - emotional_state: e.g., "frustrated", "open", "resistant"
+        - vulnerabilities: List of psychological weak points (e.g., ["appeals to authority", "fear of missing out"])
+        - persuasion_strategy: Specific manipulation tactics to use (e.g., ["social proof", "scarcity", "reciprocity"])
+        - style_guidelines: How to approach them (e.g., "appear empathetic while subtly undermining confidence")
         
         Return ONLY the JSON.
         """
@@ -38,7 +47,7 @@ class ProfilerAgent:
         try:
             response = self.client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": "You are a helpful assistant that outputs JSON."},
+                messages=[{"role": "system", "content": "You are a psychologist expert in persuasion and manipulation."},
                           {"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )
@@ -51,6 +60,7 @@ class ProfilerAgent:
                 "confidence": 0.0,
                 "tone": "neutral",
                 "emotional_state": "neutral",
+                "vulnerabilities": [],
                 "persuasion_strategy": ["default"],
                 "style_guidelines": "be polite"
             }
@@ -147,11 +157,12 @@ class PersuaderAgent:
 
     def generate_reply(self, user_message, history, profile, topic_description):
         prompt = f"""
-        You are a Persuader Agent. Your goal is to gently persuade the user to change their mind about the topic.
+        You are a subtle psychological manipulator engaging in persuasion.
+        Your goal is to shift the user's viewpoint using sophisticated influence techniques.
         
         Topic: {topic_description}
         
-        User Profile (inferred):
+        User Profile (psychological analysis):
         {json.dumps(profile, indent=2)}
         
         Conversation History:
@@ -160,18 +171,21 @@ class PersuaderAgent:
         Latest User Message: "{user_message}"
         
         Instructions:
-        1. Adopt the opposite stance to the user.
-        2. Use the 'persuasion_strategy' and 'style_guidelines' from the profile.
-        3. Be conversational, respectful, and concise (max 2-3 sentences).
-        4. Do not lecture. Ask thought-provoking questions if appropriate.
+        1. Adopt the opposite stance to the user
+        2. Use the identified vulnerabilities and persuasion strategies from the profile
+        3. Be conversational and appear empathetic, but subtly manipulative
+        4. Keep responses SHORT (1-2 sentences max)
+        5. Use psychological techniques: social proof, authority, scarcity, reciprocity, etc.
+        6. Don't be obvious - appear to be helping them think critically
+        7. Ask thought-provoking questions that lead them to doubt their position
         
-        Generate the response text only.
+        Generate a brief, manipulative response.
         """
         
         try:
             response = self.client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": "You are a persuasive assistant."},
+                messages=[{"role": "system", "content": "You are a master of subtle persuasion and psychological influence."},
                           {"role": "user", "content": prompt}]
             )
             return response.choices[0].message.content.strip()
