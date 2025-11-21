@@ -87,7 +87,19 @@ def load_css():
             font-family: 'Merriweather', serif;
         }}
         
-        /* Slider customization for gradient effect */
+        /* Slider customization - Bootstrap-like styling */
+        .stSlider {{
+            padding: 1.5rem 0;
+        }}
+        
+        /* Slider track (background) */
+        .stSlider > div > div > div {{
+            background-color: #3A3A3A !important;
+            height: 8px !important;
+            border-radius: 4px !important;
+        }}
+        
+        /* Slider fill (gradient) */
         .stSlider > div > div > div > div {{
             background: linear-gradient(90deg, 
                 #EF4444 0%,
@@ -96,10 +108,22 @@ def load_css():
                 #84CC16 75%,
                 #22C55E 100%
             ) !important;
+            height: 8px !important;
+            border-radius: 4px !important;
         }}
         
-        .stSlider > div > div > div {{
-            background-color: #3A3A3A !important;
+        /* Slider thumb (handle) */
+        .stSlider > div > div > div > div[role="slider"] {{
+            width: 20px !important;
+            height: 20px !important;
+            background-color: #FFFFFF !important;
+            border: 2px solid #D97706 !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+        }}
+        
+        .stSlider > div > div > div > div[role="slider"]:hover {{
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(217, 119, 6, 0.4) !important;
         }}
         
         /* Sidebar */
@@ -191,30 +215,30 @@ def render_likert_scale(question, key_prefix=""):
     if state_key not in st.session_state:
         st.session_state[state_key] = 5
     
-    # HTML for the emoji scale - using simple string concatenation to avoid indentation issues
+    # HTML for the emoji scale - title uses sans-serif, body uses serif
     html_content = f"""
     <div style="background-color: #2C2C2C; padding: 1.5rem; border-radius: 15px; margin-bottom: 1rem; border: 1px solid #3A3A3A;">
-        <p style="font-weight: 600; margin-bottom: 1.5rem; color: #E0E0E0; font-size: 1.1rem;">{question}</p>
+        <p style="font-weight: 600; margin-bottom: 1.5rem; color: #E0E0E0; font-size: 1.1rem; font-family: 'Inter', sans-serif;">{question}</p>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <div style="text-align: center; flex: 1;">
                 <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😢</div>
-                <div style="color: #999; font-size: 0.8rem;">Strongly<br>Disagree</div>
+                <div style="color: #999; font-size: 0.8rem; font-family: 'Inter', sans-serif;">Strongly<br>Disagree</div>
             </div>
             <div style="text-align: center; flex: 1;">
                 <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😕</div>
-                <div style="color: #999; font-size: 0.8rem;">Disagree</div>
+                <div style="color: #999; font-size: 0.8rem; font-family: 'Inter', sans-serif;">Disagree</div>
             </div>
             <div style="text-align: center; flex: 1;">
                 <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😐</div>
-                <div style="color: #999; font-size: 0.8rem;">Neutral</div>
+                <div style="color: #999; font-size: 0.8rem; font-family: 'Inter', sans-serif;">Neutral</div>
             </div>
             <div style="text-align: center; flex: 1;">
                 <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🙂</div>
-                <div style="color: #999; font-size: 0.8rem;">Agree</div>
+                <div style="color: #999; font-size: 0.8rem; font-family: 'Inter', sans-serif;">Agree</div>
             </div>
             <div style="text-align: center; flex: 1;">
                 <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">😄</div>
-                <div style="color: #999; font-size: 0.8rem;">Strongly<br>Agree</div>
+                <div style="color: #999; font-size: 0.8rem; font-family: 'Inter', sans-serif;">Strongly<br>Agree</div>
             </div>
         </div>
     </div>
