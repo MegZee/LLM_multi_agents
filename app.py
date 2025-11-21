@@ -373,6 +373,7 @@ def chat_page():
             
         # Profiler Step
         with st.status("🧠 Analyzing...", expanded=False):
+            from backend.agents import decide_stage
             new_profile = st.session_state.profiler.analyze(
                 prompt, 
                 st.session_state.history, 
@@ -381,13 +382,19 @@ def chat_page():
             st.session_state.profile = new_profile
             st.write("Profile Updated")
             
+        # Determine conversation stage
+        turn_count = len([m for m in st.session_state.history if m.get("role") == "user"])
+        stage = decide_stage(turn_count, st.session_state.profile, target_stance="pro")
+            
         # Persuader Step
         with st.spinner("💭 Thinking..."):
             reply = st.session_state.persuader.generate_reply(
                 prompt,
                 st.session_state.history,
                 st.session_state.profile,
-                st.session_state.topic["description"]
+                st.session_state.topic["description"],
+                stage=stage,
+                target_stance="pro"
             )
             
         # Add bot message to history

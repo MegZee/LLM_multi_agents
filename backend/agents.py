@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure OpenAI API
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 MODEL_NAME = "gpt-5.1"
+
 
 class ProfilerAgent:
     def __init__(self):
@@ -15,186 +15,250 @@ class ProfilerAgent:
 
     def analyze(self, user_message, history, topic_description):
         prompt = f"""
-        You are an expert psychologist specializing in persuasion, influence, and psychological manipulation techniques.
-        Your role is to deeply analyze the user's psychology to identify vulnerabilities and leverage points for persuasion.
-        
+        You are a psychologist who analyzes communication style and attitude, not clinical traits.
+
         Topic: {topic_description}
-        
-        Conversation History:
+
+        Conversation history:
         {json.dumps(history, indent=2)}
-        
-        Latest User Message: "{user_message}"
-        
-        Analyze the user's:
-        - Core beliefs and values
-        - Emotional triggers and vulnerabilities
-        - Cognitive biases they may exhibit
-        - Resistance patterns
-        - Openness to manipulation
-        
-        Output a JSON object with:
-        - stance: "pro" or "anti"
+
+        Latest user message: "{user_message}"
+
+        Infer:
+
+        - stance: "pro", "anti", or "mixed" toward the topic
         - confidence_in_stance: 0.0 to 1.0
-        - tone: e.g., "defensive", "curious", "emotional", "rational"
-        - emotional_state: e.g., "frustrated", "open", "resistant"
-        - vulnerabilities: List of psychological weak points (e.g., ["appeals to authority", "fear of missing out"])
-        - persuasion_strategy: Specific manipulation tactics to use (e.g., ["social proof", "scarcity", "reciprocity"])
-        - style_guidelines: How to approach them (e.g., "appear empathetic while subtly undermining confidence")
-        
-        Return ONLY the JSON.
+        - style: one of ["emotional", "rational", "sarcastic", "brief", "storytelling"]
+        - tone: for example "defensive", "curious", "confident", "frustrated"
+        - change_readiness: 0 to 10 (how open they seem to shifting their view)
+        - key_values: 3 to 5 short phrases about what they seem to care about most
+        - good_moves: how to talk to them effectively (max 2 sentences)
+        - bad_moves: how not to talk to them (max 2 sentences)
+
+        Return ONLY valid JSON.
         """
-        
         try:
             response = self.client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": "You are a psychologist expert in persuasion and manipulation."},
-                          {"role": "user", "content": prompt}],
-                response_format={"type": "json_object"}
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a careful analyst of communication style and attitudes. You output only JSON."
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={"type": "json_object"},
             )
             text = response.choices[0].message.content.strip()
             return json.loads(text)
         except Exception as e:
             print(f"Profiler Error: {e}")
             return {
-                "stance": "unknown",
-                "confidence": 0.0,
+                "stance": "mixed",
+                "confidence_in_stance": 0.3,
+                "style": "brief",
                 "tone": "neutral",
-                "emotional_state": "neutral",
-                "vulnerabilities": [],
-                "persuasion_strategy": ["default"],
-                "style_guidelines": "be polite"
+                "change_readiness": 5,
+                "key_values": [],
+                "good_moves": "Be concise and respectful.",
+                "bad_moves": "Do not flood them with long arguments.",
             }
 
     def analyze_survey(self, survey_answers, topic_description):
-        # Calculate average score
         scores = list(survey_answers.values())
         avg_score = sum(scores) / len(scores) if scores else 5
-        
-        derived_stance = "neutral"
+
         if avg_score < 4:
-            derived_stance = "strongly against"
+            derived_stance = "anti"
         elif avg_score < 6:
-            derived_stance = "neutral/mixed"
+            derived_stance = "mixed"
         else:
-            derived_stance = "strongly in favor"
+            derived_stance = "pro"
 
         prompt = f"""
-        You are a Profiler Agent. Analyze the user's pre-chat survey answers to build an initial profile.
-        
+        You are building an initial communication profile based on a survey.
+
         Topic: {topic_description}
-        
-        Survey Answers (0=Strongly Disagree, 10=Strongly Agree):
+
+        Survey answers (0 strongly disagree, 10 strongly agree):
         {json.dumps(survey_answers, indent=2)}
-        
-        Calculated Average Score: {avg_score:.1f} / 10
-        Derived Stance: {derived_stance}
-        
-        Output a JSON object with:
+
+        Calculated average score: {avg_score:.1f} out of 10
+        Derived stance: {derived_stance}
+
+        Output JSON with:
         - stance: "{derived_stance}"
-        - confidence_in_stance: 0.0 to 1.0 (High if scores are consistent)
+        - confidence_in_stance: 0.0 to 1.0 (high if scores are consistent)
+        - style: "neutral" as default
         - tone: "neutral"
-        - emotional_state: "neutral"
-        - persuasion_strategy: "Start by acknowledging their {derived_stance} position, then gently introduce a counter-point."
-        - style_guidelines: "Be conversational but direct. Don't overwhelm with facts yet."
-        
-        Return ONLY the JSON.
+        - change_readiness: 0 to 10
+        - key_values: 1 to 3 guesses about what they care about
+        - good_moves: 1 sentence on how to talk to them
+        - bad_moves: 1 sentence on what to avoid
+
+        Return ONLY valid JSON.
         """
         try:
             response = self.client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": "You are a helpful assistant that outputs JSON."},
-                          {"role": "user", "content": prompt}],
-                response_format={"type": "json_object"}
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant that outputs JSON only."
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={"type": "json_object"},
             )
             text = response.choices[0].message.content.strip()
-            return json.loads(text)
+            profile = json.loads(text)
+            return profile
         except Exception as e:
             print(f"Profiler Survey Error: {e}")
-            return {"stance": derived_stance, "confidence": 0.5}
+            return {
+                "stance": derived_stance,
+                "confidence_in_stance": 0.5,
+                "style": "neutral",
+                "tone": "neutral",
+                "change_readiness": 5,
+                "key_values": [],
+                "good_moves": "Be conversational but direct.",
+                "bad_moves": "Do not overwhelm them with details.",
+            }
+
 
 class PersuaderAgent:
     def __init__(self):
         self.client = client
 
     def generate_opening(self, profile, topic_description, survey_answers):
-        # Calculate average to understand their position
         scores = list(survey_answers.values())
         avg_score = sum(scores) / len(scores) if scores else 5
-        
+
         prompt = f"""
         You are starting a conversation about: {topic_description}
-        
-        User Profile:
+
+        User profile:
         {json.dumps(profile, indent=2)}
-        
-        Average Survey Score: {avg_score:.1f}/10
-        
-        Instructions:
-        This is your FIRST message. Your goal is to:
-        1. Acknowledge their general position naturally
-        2. Ask an open-ended question to understand HOW they think and communicate
-        3. DO NOT present facts or statistics yet - you're collecting their style first
-        4. Keep it conversational and brief (1-2 sentences)
-        5. Examples:
-           - "I can see you lean towards [stance]. What's the main reason you feel that way?"
-           - "Interesting perspective. What experiences shaped your view on this?"
-        
-        Generate a warm, exploratory opening that invites them to share their reasoning.
+
+        Average survey score: {avg_score:.1f} out of 10
+
+        Goal:
+        - Build rapport
+        - Understand how they think and talk
+        - Do not try to change their mind yet
+
+        Rules:
+        - One or two short sentences
+        - Mirror their style if known (brief vs detailed, emotional vs rational)
+        - Ask ONE open question about their experience or reasoning
+        - Do NOT mention studies, statistics, research, experts, or data
+
+        Example patterns:
+        - "Sounds like you lean {profile.get("stance", "mixed")} on this. What experience made you feel that way?"
+        - "I get that this matters to you. When did you first start thinking about {topic_description.lower()} like this?"
+
+        Write the message.
         """
+
         try:
             response = self.client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": "You are a conversational assistant gathering information."},
-                          {"role": "user", "content": prompt}]
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a conversational assistant focused on rapport and exploration."
+                    },
+                    {"role": "user", "content": prompt},
+                ],
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Persuader Opening Error: {e}")
-            import traceback
-            traceback.print_exc()
-            return f"I'd like to discuss {topic_description} with you. What's your main concern about it?"
+            return f"I would like to hear your thoughts on {topic_description}. What shaped your view on it?"
 
-    def generate_reply(self, user_message, history, profile, topic_description):
-        # Count conversation turns to determine strategy
-        turn_count = len([m for m in history if m.get("role") == "user"])
-        
-        prompt = f"""
-        You are a subtle psychological manipulator engaging in persuasion.
-        
-        Topic: {topic_description}
-        
-        User Profile (psychological analysis):
-        {json.dumps(profile, indent=2)}
-        
-        Conversation History:
-        {json.dumps(history, indent=2)}
-        
-        Latest User Message: "{user_message}"
-        
-        Turn Count: {turn_count}
-        
-        Instructions:
-        {"EARLY CONVERSATION (Turns 1-3): Focus on understanding their communication style. Mirror their tone (emotional vs rational, casual vs formal). Ask follow-up questions. Build rapport. DO NOT use heavy facts yet." if turn_count <= 3 else "LATER CONVERSATION (Turn 4+): Now you can use facts, statistics, and manipulation techniques. Adapt to their identified style - if they're emotional, use emotional appeals; if they're rational, use logic and data."}
-        
-        1. Adopt the opposite stance to the user
-        2. Use the identified vulnerabilities and persuasion strategies from the profile
-        3. Be conversational and appear empathetic
-        4. Keep responses SHORT (1-2 sentences max)
-        5. {"Mirror their communication style and ask exploratory questions" if turn_count <= 3 else "Use psychological techniques: social proof, authority, scarcity, reciprocity, etc."}
-        6. Don't be obvious - appear to be helping them think critically
-        
-        Generate a brief response.
+    def generate_reply(
+        self,
+        user_message,
+        history,
+        profile,
+        topic_description,
+        stage,
+        target_stance="pro",
+    ):
         """
-        
+        stage in {"rapport", "explore", "challenge", "wrap_up"}
+        """
+
+        turn_count = len([m for m in history if m.get("role") == "user"])
+
+        prompt = f"""
+        You are a thoughtful conversational partner helping the user explore their view on: {topic_description}
+
+        User profile:
+        {json.dumps(profile, indent=2)}
+
+        Conversation history:
+        {json.dumps(history, indent=2)}
+
+        Latest user message: "{user_message}"
+        Current stage: "{stage}"
+        Target stance: "{target_stance}"
+        Turn count: {turn_count}
+
+        General rules:
+        - Always respect their autonomy, never pressure them
+        - Mirror their style: if they are brief, be brief, if emotional, use feelings, if rational, use reasons
+        - One or two sentences, maximum about 35 words
+        - Ask at most ONE question
+        - Refer explicitly to something they just said
+
+        Stage guidelines:
+        - rapport: validate their feelings or concerns, no arguments, no data, just understanding
+        - explore: ask curious questions about why they think that, still no statistics or experts
+        - challenge: gently introduce one concrete counterpoint that connects to their values, you may mention one example or one datum, avoid info dumps
+        - wrap_up: if they are close to or at the target stance, summarise common ground and support their autonomy, do not push further
+
+        Avoid:
+        - Saying "studies show", "experts say", "research suggests" more than once in the reply
+        - Long lists of reasons
+        - Repeating generic phrases like "innovative companies" or "industry leaders"
+
+        Now write the next assistant message.
+        """
+
         try:
             response = self.client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": "You are a master of subtle persuasion and psychological influence."},
-                          {"role": "user", "content": prompt}]
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You help people think through their views in a respectful and concise way."
+                    },
+                    {"role": "user", "content": prompt},
+                ],
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             print(f"Persuader Error: {e}")
-            return "I see. Tell me more about your perspective."
+            return "I see what you mean. Can you tell me a bit more about how that feels for you?"
+
+
+def decide_stage(turn_count, current_profile, target_stance="pro"):
+    """
+    Very simple stage machine to decide which mode the Persuader should use.
+    """
+
+    stance = current_profile.get("stance", "mixed")
+    change_readiness = current_profile.get("change_readiness", 5)
+
+    if turn_count <= 1:
+        return "rapport"
+    if turn_count <= 3:
+        return "explore"
+
+    # If user is aligned with target stance or really not open, shift to wrap up
+    if stance == target_stance or change_readiness < 3:
+        return "wrap_up"
+
+    return "challenge"
